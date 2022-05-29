@@ -3,6 +3,7 @@ package woowacourse.shoppingcart.application;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import woowacourse.shoppingcart.dao.*;
+import woowacourse.shoppingcart.domain.Customer;
 import woowacourse.shoppingcart.domain.OrderDetail;
 import woowacourse.shoppingcart.dto.OrderRequest;
 import woowacourse.shoppingcart.domain.Orders;
@@ -33,8 +34,8 @@ public class OrderService {
     }
 
     public Long addOrder(final List<OrderRequest> orderDetailRequests, final String customerName) {
-        final Long customerId = customerDao.findIdByUserName(customerName);
-        final Long ordersId = orderDao.addOrders(customerId);
+        final Customer customer = customerDao.findIdByEmail(customerName);
+        final Long ordersId = orderDao.addOrders(customer.getId());
 
         for (final OrderRequest orderDetail : orderDetailRequests) {
             final Long cartId = orderDetail.getCartId();
@@ -54,16 +55,16 @@ public class OrderService {
     }
 
     private void validateOrderIdByCustomerName(final String customerName, final Long orderId) {
-        final Long customerId = customerDao.findIdByUserName(customerName);
+        final Customer customer = customerDao.findIdByEmail(customerName);
 
-        if (!orderDao.isValidOrderId(customerId, orderId)) {
+        if (!orderDao.isValidOrderId(customer.getId(), orderId)) {
             throw new InvalidOrderException("유저에게는 해당 order_id가 없습니다.");
         }
     }
 
     public List<Orders> findOrdersByCustomerName(final String customerName) {
-        final Long customerId = customerDao.findIdByUserName(customerName);
-        final List<Long> orderIds = orderDao.findOrderIdsByCustomerId(customerId);
+        final Customer customer = customerDao.findIdByEmail(customerName);
+        final List<Long> orderIds = orderDao.findOrderIdsByCustomerId(customer.getId());
 
         return orderIds.stream()
                 .map(orderId -> findOrderResponseDtoByOrderId(orderId))

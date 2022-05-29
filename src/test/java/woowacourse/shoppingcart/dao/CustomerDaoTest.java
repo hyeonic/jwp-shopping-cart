@@ -1,5 +1,7 @@
 package woowacourse.shoppingcart.dao;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -8,8 +10,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestConstructor;
 import org.springframework.test.context.jdbc.Sql;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import woowacourse.shoppingcart.domain.Customer;
 
 @JdbcTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)
@@ -23,31 +24,23 @@ public class CustomerDaoTest {
         customerDao = new CustomerDao(jdbcTemplate);
     }
 
-    @DisplayName("username을 통해 아이디를 찾으면, id를 반환한다.")
+    @DisplayName("email을 기반으로 고객을 조회한다.")
     @Test
-    void findIdByUserNameTest() {
+    void 고객_email_기반_조회() {
+        final String email = "test@email.com";
 
-        // given
-        final String userName = "puterism";
+        final Customer customer = customerDao.findIdByEmail(email);
 
-        // when
-        final Long customerId = customerDao.findIdByUserName(userName);
-
-        // then
-        assertThat(customerId).isEqualTo(1L);
+        assertThat(customer.getEmail()).isEqualTo(email);
     }
 
-    @DisplayName("대소문자를 구별하지 않고 username을 통해 아이디를 찾으면, id를 반환한다.")
+    @DisplayName("email을 기반으로 존재 유무를 반환한다.")
     @Test
-    void findIdByUserNameTestIgnoreUpperLowerCase() {
+    void 고객_email_존재유무() {
+        final String email = "test@email.com";
 
-        // given
-        final String userName = "gwangyeol-iM";
+        final boolean result = customerDao.existsByEmail(email);
 
-        // when
-        final Long customerId = customerDao.findIdByUserName(userName);
-
-        // then
-        assertThat(customerId).isEqualTo(16L);
+        assertThat(result).isTrue();
     }
 }
